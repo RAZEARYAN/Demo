@@ -1,0 +1,33 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Checkout') {
+            steps {
+                // Pulls the latest code from your GitHub develop branch
+                git branch: 'develop', url: 'https://github.com/RAZEARYAN/n3iwf-amf.git'
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                echo 'Starting OAI-AMF Docker Build...'
+                sh 'docker build -f docker/Dockerfile.amf.ubuntu -t amf-n3iwf:v2.9 .'
+            }
+        }
+
+        stage('Archive Artifacts') {
+            steps {
+                echo 'Saving AMF logs and documentation as artifacts...'
+                // They will appear on the Jenkins Job page for every build
+                archiveArtifacts artifacts: 'amf_logs.txt, CHANGELOG.md, etc/*.conf', allowEmptyArchive: true
+            }
+        }
+    }
+
+    post {
+        success {
+            echo 'Automation successful! Artifacts are available on the dashboard.'
+        }
+    }
+}
